@@ -1,0 +1,40 @@
+# Core system files
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Data files (Don't push large CSVs or Delta files)
+delta_output/
+data_generation/temp_data/
+
+# IDE files
+.vscode/
+.idea/
+.snapshots/
+
+# Private interview prep materials
+interview_ready/
+
+# PySpark / Spark
+spark-warehouse/
+metastore_db/
+derby.log
+*.log
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+.DS_Store
+Thumbs.db
+  
+ 
+*.zip
+*.diff
+changes.diff
+azure_prof/
+interview_ready/
+interview_azure_lakehouse/
