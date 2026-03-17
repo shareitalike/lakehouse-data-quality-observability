@@ -1,0 +1,29 @@
+rules:
+  - rule_type: RowCountAnomalyRule
+    rule_id: gold_daily_revenue_row_count
+    rule_version: "1.0"
+    min_deviation_pct: -30.0
+    max_deviation_pct: 50.0
+    lookback_runs: 10
+    severity: critical
+    layer: gold
+    description: "Detect sudden drops or spikes in daily revenue row count"
+
+  - rule_type: TimestampFreshnessRule
+    rule_id: gold_freshness_check
+    rule_version: "1.0"
+    column_name: computed_at
+    max_age_hours: 2.0
+    severity: critical
+    layer: gold
+    description: "Gold data must be less than 2 hours old (SLA)"
+
+  - rule_type: DistributionAnomalyRule
+    rule_id: gold_revenue_distribution
+    rule_version: "1.0"
+    column_name: total_revenue
+    z_score_threshold: 2.5
+    max_percentile_drift_pct: 20.0
+    severity: critical
+    layer: gold
+    description: "Detect aggregation skew in revenue numbers"

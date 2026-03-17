@@ -1,0 +1,90 @@
+rules:
+  - rule_type: NotNullRule
+    rule_id: bronze_order_id_not_null
+    rule_version: "1.0"
+    column_name: order_id
+    severity: critical
+    layer: bronze
+    description: "Order ID must never be null — it's the primary key"
+
+  - rule_type: NotNullRule
+    rule_id: bronze_customer_id_not_null
+    rule_version: "1.0"
+    column_name: customer_id
+    severity: warning
+    layer: bronze
+    description: "Customer ID should not be null for attribution"
+
+  - rule_type: UniqueKeyRule
+    rule_id: bronze_order_id_unique
+    rule_version: "1.0"
+    columns:
+      - order_id
+    severity: warning
+    layer: bronze
+    description: "Detect duplicate order_ids in raw events"
+
+  - rule_type: AcceptedValuesRule
+    rule_id: bronze_order_status_valid
+    rule_version: "1.0"
+    column_name: order_status
+    accepted_values:
+      - pending
+      - confirmed
+      - shipped
+      - delivered
+      - cancelled
+      - returned
+      - refunded
+    severity: warning
+    layer: bronze
+    description: "Order status must be a known enum value"
+
+  - rule_type: AcceptedValuesRule
+    rule_id: bronze_currency_valid
+    rule_version: "1.0"
+    column_name: currency
+    accepted_values:
+      - USD
+      - EUR
+      - GBP
+      - INR
+      - JPY
+      - CAD
+      - AUD
+    severity: warning
+    layer: bronze
+    description: "Currency must be a supported ISO code"
+
+  - rule_type: PositiveNumericRule
+    rule_id: bronze_quantity_positive
+    rule_version: "1.0"
+    column_name: quantity
+    severity: warning
+    layer: bronze
+    description: "Quantity should be positive (negative = return?)"
+
+  - rule_type: PositiveNumericRule
+    rule_id: bronze_unit_price_positive
+    rule_version: "1.0"
+    column_name: unit_price
+    severity: warning
+    layer: bronze
+    description: "Unit price should be positive"
+
+  - rule_type: SchemaDriftRule
+    rule_id: bronze_schema_drift
+    rule_version: "1.0"
+    expected_columns:
+      - order_id
+      - customer_id
+      - product_id
+      - order_status
+      - quantity
+      - unit_price
+      - currency
+      - order_timestamp
+    allow_extra_columns: false
+    severity: critical
+    layer: bronze
+    description: "Detect unexpected schema changes in raw events"

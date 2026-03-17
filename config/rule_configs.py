@@ -346,185 +346,32 @@ class DistributionAnomalyRule(BaseRuleConfig):
 
 def get_bronze_rules() -> List[BaseRuleConfig]:
     """
-    Default rule configurations for Bronze layer validation.
-    
+    Load rule configurations for Bronze layer validation from YAML.
     """
-    return [
-        NotNullRule(
-            rule_id="bronze_order_id_not_null",
-            rule_version="1.0",
-            column_name="order_id",
-            severity=Severity.CRITICAL,
-            layer=Layer.BRONZE,
-            description="Order ID must never be null — it's the primary key",
-        ),
-        NotNullRule(
-            rule_id="bronze_customer_id_not_null",
-            rule_version="1.0",
-            column_name="customer_id",
-            severity=Severity.WARNING,
-            layer=Layer.BRONZE,
-            description="Customer ID should not be null for attribution",
-        ),
-        UniqueKeyRule(
-            rule_id="bronze_order_id_unique",
-            rule_version="1.0",
-            columns=["order_id"],
-            severity=Severity.WARNING,
-            layer=Layer.BRONZE,
-            description="Detect duplicate order_ids in raw events",
-            # WARNING not CRITICAL: Bronze sees raw events which may have
-            # legitimate retries. Deduplication happens in Silver.
-        ),
-        AcceptedValuesRule(
-            rule_id="bronze_order_status_valid",
-            rule_version="1.0",
-            column_name="order_status",
-            accepted_values=[
-                "pending", "confirmed", "shipped",
-                "delivered", "cancelled", "returned", "refunded",
-            ],
-            severity=Severity.WARNING,
-            layer=Layer.BRONZE,
-            description="Order status must be a known enum value",
-        ),
-        AcceptedValuesRule(
-            rule_id="bronze_currency_valid",
-            rule_version="1.0",
-            column_name="currency",
-            accepted_values=["USD", "EUR", "GBP", "INR", "JPY", "CAD", "AUD"],
-            severity=Severity.WARNING,
-            layer=Layer.BRONZE,
-            description="Currency must be a supported ISO code",
-        ),
-        PositiveNumericRule(
-            rule_id="bronze_quantity_positive",
-            rule_version="1.0",
-            column_name="quantity",
-            severity=Severity.WARNING,
-            layer=Layer.BRONZE,
-            description="Quantity should be positive (negative = return?)",
-        ),
-        PositiveNumericRule(
-            rule_id="bronze_unit_price_positive",
-            rule_version="1.0",
-            column_name="unit_price",
-            severity=Severity.WARNING,
-            layer=Layer.BRONZE,
-            description="Unit price should be positive",
-        ),
-        SchemaDriftRule(
-            rule_id="bronze_schema_drift",
-            rule_version="1.0",
-            expected_columns=[
-                "order_id", "customer_id", "product_id", "order_status",
-                "quantity", "unit_price", "currency", "order_timestamp",
-            ],
-            allow_extra_columns=False,
-            severity=Severity.CRITICAL,
-            layer=Layer.BRONZE,
-            description="Detect unexpected schema changes in raw events",
-        ),
-    ]
+    from config.yaml_parser import load_rules_from_yaml
+    import os
+    
+    rules_path = os.path.join(os.path.dirname(__file__), "rules", "bronze_rules.yaml")
+    return load_rules_from_yaml(rules_path)
 
 
 def get_silver_rules() -> List[BaseRuleConfig]:
     """
-    Default rule configurations for Silver layer validation.
-    
+    Load rule configurations for Silver layer validation from YAML.
     """
-    return [
-        NotNullRule(
-            rule_id="silver_customer_id_not_null",
-            rule_version="1.0",
-            column_name="customer_id",
-            severity=Severity.CRITICAL,
-            layer=Layer.SILVER,
-            description="Customer ID must not be null in Silver (quarantined in Bronze)",
-        ),
-        UniqueKeyRule(
-            rule_id="silver_order_id_unique",
-            rule_version="1.0",
-            columns=["order_id"],
-            severity=Severity.CRITICAL,
-            layer=Layer.SILVER,
-            description="Order ID must be unique in Silver (deduplicated from Bronze)",
-        ),
-        TimestampFreshnessRule(
-            rule_id="silver_freshness_check",
-            rule_version="1.0",
-            column_name="ingestion_timestamp",
-            max_age_hours=4.0,
-            severity=Severity.WARNING,
-            layer=Layer.SILVER,
-            description="Silver data should not be older than 4 hours",
-        ),
-        DuplicateDetectionRule(
-            rule_id="silver_dedup_orders",
-            rule_version="1.0",
-            key_columns=["order_id"],
-            order_by_column="order_timestamp",
-            keep="last",
-            severity=Severity.CRITICAL,
-            layer=Layer.SILVER,
-            description="Deduplicate orders by order_id, keep latest",
-        ),
-        DistributionAnomalyRule(
-            rule_id="silver_price_distribution",
-            rule_version="1.0",
-            column_name="unit_price",
-            z_score_threshold=3.0,
-            max_percentile_drift_pct=25.0,
-            severity=Severity.WARNING,
-            layer=Layer.SILVER,
-            description="Detect abnormal price distribution changes",
-        ),
-        DistributionAnomalyRule(
-            rule_id="silver_quantity_distribution",
-            rule_version="1.0",
-            column_name="quantity",
-            z_score_threshold=3.0,
-            max_percentile_drift_pct=30.0,
-            severity=Severity.WARNING,
-            layer=Layer.SILVER,
-            description="Detect abnormal quantity distribution changes",
-        ),
-    ]
+    from config.yaml_parser import load_rules_from_yaml
+    import os
+    
+    rules_path = os.path.join(os.path.dirname(__file__), "rules", "silver_rules.yaml")
+    return load_rules_from_yaml(rules_path)
 
 
 def get_gold_rules() -> List[BaseRuleConfig]:
     """
-    Default rule configurations for Gold layer validation.
-    
+    Load rule configurations for Gold layer validation from YAML.
     """
-    return [
-        RowCountAnomalyRule(
-            rule_id="gold_daily_revenue_row_count",
-            rule_version="1.0",
-            min_deviation_pct=-30.0,
-            max_deviation_pct=50.0,
-            lookback_runs=10,
-            severity=Severity.CRITICAL,
-            layer=Layer.GOLD,
-            description="Detect sudden drops or spikes in daily revenue row count",
-        ),
-        TimestampFreshnessRule(
-            rule_id="gold_freshness_check",
-            rule_version="1.0",
-            column_name="computed_at",
-            max_age_hours=2.0,
-            severity=Severity.CRITICAL,
-            layer=Layer.GOLD,
-            description="Gold data must be less than 2 hours old (SLA)",
-        ),
-        DistributionAnomalyRule(
-            rule_id="gold_revenue_distribution",
-            rule_version="1.0",
-            column_name="total_revenue",
-            z_score_threshold=2.5,
-            max_percentile_drift_pct=20.0,
-            severity=Severity.CRITICAL,
-            layer=Layer.GOLD,
-            description="Detect aggregation skew in revenue numbers",
-        ),
-    ]
+    from config.yaml_parser import load_rules_from_yaml
+    import os
+    
+    rules_path = os.path.join(os.path.dirname(__file__), "rules", "gold_rules.yaml")
+    return load_rules_from_yaml(rules_path)

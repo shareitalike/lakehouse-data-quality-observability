@@ -1,0 +1,57 @@
+rules:
+  - rule_type: NotNullRule
+    rule_id: silver_customer_id_not_null
+    rule_version: "1.0"
+    column_name: customer_id
+    severity: critical
+    layer: silver
+    description: "Customer ID must not be null in Silver (quarantined in Bronze)"
+
+  - rule_type: UniqueKeyRule
+    rule_id: silver_order_id_unique
+    rule_version: "1.0"
+    columns:
+      - order_id
+    severity: critical
+    layer: silver
+    description: "Order ID must be unique in Silver (deduplicated from Bronze)"
+
+  - rule_type: TimestampFreshnessRule
+    rule_id: silver_freshness_check
+    rule_version: "1.0"
+    column_name: ingestion_timestamp
+    max_age_hours: 4.0
+    severity: warning
+    layer: silver
+    description: "Silver data should not be older than 4 hours"
+
+  - rule_type: DuplicateDetectionRule
+    rule_id: silver_dedup_orders
+    rule_version: "1.0"
+    key_columns:
+      - order_id
+    order_by_column: order_timestamp
+    keep: last
+    severity: critical
+    layer: silver
+    description: "Deduplicate orders by order_id, keep latest"
+
+  - rule_type: DistributionAnomalyRule
+    rule_id: silver_price_distribution
+    rule_version: "1.0"
+    column_name: unit_price
+    z_score_threshold: 3.0
+    max_percentile_drift_pct: 25.0
+    severity: warning
+    layer: silver
+    description: "Detect abnormal price distribution changes"
+
+  - rule_type: DistributionAnomalyRule
+    rule_id: silver_quantity_distribution
+    rule_version: "1.0"
+    column_name: quantity
+    z_score_threshold: 3.0
+    max_percentile_drift_pct: 30.0
+    severity: warning
+    layer: silver
+    description: "Detect abnormal quantity distribution changes"
