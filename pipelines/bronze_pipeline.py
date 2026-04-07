@@ -66,6 +66,12 @@ class BronzePipeline:
         if inject_issues:
             injection_config = InjectionConfig(seed=self.config.random_seed)
             df = inject_all_issues(df, injection_config)
+            
+        # Watermark Filtering (Incremental Processing)
+        if self.config.pipeline_date:
+            print(f"Applying watermark filter for date: {self.config.pipeline_date}")
+            df = df.filter(F.to_date(F.col("order_timestamp")) == F.lit(self.config.pipeline_date))
+            print(f"Records after watermark filter: {df.count()}")
         
         return df
     
@@ -140,12 +146,12 @@ class BronzePipeline:
             .withColumn("_run_id", F.lit(self.run_id))
         )
         
-        # Write to Delta in overwrite mode for demo purposes.
+        # Write to Delta in append mode for incremental processing.
         (
             df_clean
             .write
             .format("delta")
-            .mode("overwrite")
+            .mode("append")
             .save(output_path)
         )
         
