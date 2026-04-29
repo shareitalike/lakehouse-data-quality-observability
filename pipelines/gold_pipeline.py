@@ -12,6 +12,7 @@ from typing import Dict, Any
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
+from delta.tables import DeltaTable
 
 from config.pipeline_configs import PipelineConfig
 from config.rule_configs import get_gold_rules
@@ -185,27 +186,37 @@ class GoldPipeline:
         customer_ltv_df: DataFrame,
     ) -> Dict[str, str]:
         """
-        Write Gold tables to Delta.
+        Write Gold tables to Delta using MERGE (UPSERT) for Idempotency.
         """
         paths = {}
         
-        # Daily Revenue
+        # Helper to merge or create
+        def merge_or_create(df: DataFrame, path: str, merge_condition: str):
+            if DeltaTable.isDeltaTable(self.spark, path):
+                dt = DeltaTable.forPath(self.spark, path)
+                dt.alias("target").merge(
+                    df.alias("source"),
+                    merge_condition
+                ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+                print(f"[GoldPipeline] Merged {df.count()} records into {path}")
+            else:
+                df.write.format("delta").mode("overwrite").save(path)
+                print(f"[GoldPipeline] Created new Delta table at {path} with {df.count()} records")
+        
+        # Daily Revenue (Merge on date and currency)
         rev_path = self.config.paths.gold_daily_revenue
-        daily_revenue_df.write.format("delta").mode("overwrite").save(rev_path)
+        merge_or_create(daily_revenue_df, rev_path, "target.order_date = source.order_date AND target.currency = source.currency")
         paths["daily_revenue"] = rev_path
-        print(f"[GoldPipeline] Daily Revenue: {daily_revenue_df.count()} rows → {rev_path}")
         
-        # Product Performance
+        # Product Performance (Merge on product_id)
         prod_path = self.config.paths.gold_product_performance
-        product_perf_df.write.format("delta").mode("overwrite").save(prod_path)
+        merge_or_create(product_perf_df, prod_path, "target.product_id = source.product_id")
         paths["product_performance"] = prod_path
-        print(f"[GoldPipeline] Product Perf: {product_perf_df.count()} rows → {prod_path}")
         
-        # Customer LTV
+        # Customer LTV (Merge on customer_id)
         ltv_path = self.config.paths.gold_customer_ltv
-        customer_ltv_df.write.format("delta").mode("overwrite").save(ltv_path)
+        merge_or_create(customer_ltv_df, ltv_path, "target.customer_id = source.customer_id")
         paths["customer_ltv"] = ltv_path
-        print(f"[GoldPipeline] Customer LTV: {customer_ltv_df.count()} rows → {ltv_path}")
         
         return paths
     
