@@ -1,0 +1,28 @@
+{
+    "name": "trg_storage_events",
+    "properties": {
+        "annotations": [],
+        "runtimeState": "Started",
+        "pipelines": [
+            {
+                "pipelineReference": {
+                    "referenceName": "pl_master_lakehouse",
+                    "type": "PipelineReference"
+                },
+                "parameters": {
+                    "run_date": "@formatDateTime(trigger().outputs.windowStartTime, 'yyyy-MM-dd')"
+                }
+            }
+        ],
+        "type": "BlobEventsTrigger",
+        "typeProperties": {
+            "blobPathBeginsWith": "/lakehouse/bronze/raw_events/",
+            "blobPathEndsWith": ".parquet",
+            "ignoreEmptyBlobs": true,
+            "scope": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-lakehouse-prod/providers/Microsoft.Storage/storageAccounts/adlsg2lakehouseprod",
+            "events": [
+                "Microsoft.Storage.BlobCreated"
+            ]
+        }
+    }
+}

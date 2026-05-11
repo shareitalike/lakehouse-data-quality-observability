@@ -1,0 +1,13 @@
+{
+    "name": "ls_databricks",
+    "properties": {
+        "annotations": [],
+        "type": "AzureDatabricks",
+        "typeProperties": {
+            "domain": "https://adb-1234567890123456.7.azuredatabricks.net",
+            "authentication": "ManagedIdentity",
+            "workspaceResourceId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-lakehouse-prod/providers/Microsoft.Databricks/workspaces/dbw-lakehouse-prod",
+            "existingClusterId": "0123-456789-abcdefg"
+        }
+    }
+}

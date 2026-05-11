@@ -1,0 +1,41 @@
+{
+    "name": "pl_master_lakehouse",
+    "properties": {
+        "activities": [
+            {
+                "name": "Execute_Lakehouse_Pipeline",
+                "type": "DatabricksNotebook",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 1,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Shared/pipelines/orchestrator",
+                    "baseParameters": {
+                        "env": "azure",
+                        "pipeline_date": {
+                            "value": "@pipeline().parameters.run_date",
+                            "type": "Expression"
+                        }
+                    }
+                },
+                "linkedServiceName": {
+                    "referenceName": "ls_databricks",
+                    "type": "LinkedServiceReference"
+                }
+            }
+        ],
+        "parameters": {
+            "run_date": {
+                "type": "string",
+                "defaultValue": "2023-11-01"
+            }
+        },
+        "annotations": []
+    }
+}
