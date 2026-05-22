@@ -1,19 +1,4 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
-    databricks = {
-      source  = "databricks/databricks"
-      version = "~> 1.0"
-    }
-  }
-}
-
-provider "azurerm" {
-  features {}
-}
+# Resources for Lakehouse Data Quality Framework
 
 # Resource Group
 resource "azurerm_resource_group" "rg" {
