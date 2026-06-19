@@ -7,7 +7,7 @@ Metrics Collector — captures DQ metrics from validation results.
 # block the pipeline. Metrics are observability — the pipeline's job is to
 # process data, not to emit metrics. Wrap collection in try/except.
 
-# INTERVIEW: "What's the difference between validation and observability?"
+# NOTE: What's the difference between validation and observability?"
 # → "Validation GATES data — it decides if records pass or fail.
 #    Observability MONITORS trends — it tracks metrics over time.
 #    Validation is a checkpoint; observability is a time-series.

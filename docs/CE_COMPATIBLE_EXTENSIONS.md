@@ -2,7 +2,7 @@
 
 Since Databricks Community Edition restricts API access (which prevents external orchestration like Airflow, dbt Cloud integrations, or CI/CD deployments directly against the cluster), we must focus our "Senior-Level" enhancements entirely on **advanced Spark logic, pipeline architecture, and Delta Lake mechanics**.
 
-These enhancements are 100% possible within the CE environment and provide massive value for resume points and interview discussions.
+These enhancements are 100% possible within the CE environment and support high-scale enterprise operations.
 
 ## 1. Advanced Incremental Processing: Change Data Feed (CDF)
 Instead of overwriting the Gold layer or doing heavy merges based on full table scans from Silver, enable Change Data Feed.
@@ -10,13 +10,13 @@ Instead of overwriting the Gold layer or doing heavy merges based on full table 
 *   **CE Implementation:** 
     *   Enable: `ALTER TABLE silver_table SET TBLPROPERTIES (delta.enableChangeDataFeed = true)`
     *   Read changes: `spark.read.format("delta").option("readChangeFeed", "true").option("startingVersion", X)...`
-*   **Interview Value:** "I reduced our Gold layer processing time by transitioning from daily full-table merges to incremental CDC (Change Data Capture) using Delta CDF."
+*   **Engineering Rationale:** "I reduced our Gold layer processing time by transitioning from daily full-table merges to incremental CDC (Change Data Capture) using Delta CDF."
 
 ## 2. Slowly Changing Dimensions (SCD Type 2)
 Implement SCD Type 2 tracking in your Gold dimensional tables.
 *   **What it does:** Instead of updating a record in place, you close out the old record (setting `is_current = False`, `end_date = today`) and insert the new record. 
 *   **CE Implementation:** Write a complex `MERGE` statement in PySpark that matches on primary keys but inserts new rows when attributes change.
-*   **Interview Value:** SCD Type 2 is a classic, mandatory concept in Data Warehousing. Being able to code it natively in PySpark + Delta `MERGE` proves you understand dimensional modeling.
+*   **Engineering Rationale:** SCD Type 2 is a classic, mandatory concept in Data Warehousing. Being able to code it natively in PySpark + Delta `MERGE` proves you understand dimensional modeling.
 
 ## 3. Emulate Structured Streaming (Micro-Batching)
 You don't need Kafka. You can use Spark Structured Streaming directly on local folders.
@@ -25,16 +25,16 @@ You don't need Kafka. You can use Spark Structured Streaming directly on local f
     *   Have a Python script continuously drop new JSON files into a `/FileStore/bronze_drop/` directory.
     *   Use `spark.readStream.schema(...).json(...)` to read them as they arrive.
     *   Use `.writeStream.trigger(availableNow=True)` to create an automated micro-batch architecture.
-*   **Interview Value:** Demonstrates knowledge of streaming concepts: checkpointing, schemas in streams, micro-batching triggers, and state management.
+*   **Engineering Rationale:** Demonstrates knowledge of streaming concepts: checkpointing, schemas in streams, micro-batching triggers, and state management.
 
 ## 4. "Chaos Engineering": Intentional Skew & Performance Tuning
-Interviews heavily index on your ability to fix slow Spark jobs. You can simulate this.
+High-throughput workloads require proactive performance tuning. You can simulate this.
 *   **What it does:** Generate purposely skewed data (e.g., 90% of transactions come from 'store_id_1'). 
 *   **CE Implementation:** 
     *   Write a query that joins this skewed data. It will lag or crash.
     *   Implement **Salting** (adding random numbers to the join key) or rely on **Adaptive Query Execution (AQE) Skew Join optimization** to fix it.
     *   Log exactly how much faster it ran after tuning.
-*   **Interview Value:** "I identified a data skew issue causing a massive spill to disk during a shuffle. I implemented key salting which reduced job runtime by 60%."
+*   **Engineering Rationale:** "I identified a data skew issue causing a massive spill to disk during a shuffle. I implemented key salting which reduced job runtime by 60%."
 
 ## 5. Schema Evolution and Drift Handling
 Show how your pipeline reacts when the upstream source suddenly adds or removes columns.
@@ -43,7 +43,7 @@ Show how your pipeline reacts when the upstream source suddenly adds or removes 
     *   Generate a new batch of data with a completely new column.
     *   Show how `mergeSchema` handles the addition gracefully.
     *   Alternatively, write strict Python validation that rejects unexpected columns using `StructType` comparisons, routing the bad files to a dead-letter queue.
-*   **Interview Value:** Schema drift is one of the most common causes of production data incidents. Having a concrete strategy for it is very impressive.
+*   **Engineering Rationale:** Schema drift is one of the most common causes of production data incidents. Having a concrete strategy for it is very impressive.
 
 ## Summary for the Resume
 Even without Airflow or AWS, implementing just **CDF** and **SCD Type 2** allows you to put the following bullet points on your resume:

@@ -1,13 +1,9 @@
 """
 20_weekly_maintenance_job.py
 ============================
-INTERVIEW FOCUS:
-  - Why table maintenance is scheduled as a dedicated weekly ADF job instead of inside daily pipelines
-  - The mechanics of OPTIMIZE with Z-ORDER in Databricks (2022-2023 standard)
-  - VACUUM retention policies and safety guards (RETAIN 168 HOURS = 7 days)
-  - Cost Optimization: Why running compaction daily is a DBU anti-pattern
 
-TALKING POINT FOR SENIOR INTERVIEWS:
+
+
   "Running OPTIMIZE and Z-ORDER after every 20-minute daily batch is an anti-pattern
   because rewriting small Parquet files every day inflates Azure Databricks DBU costs.
   Instead, we built this dedicated maintenance script and scheduled it in ADF to run
@@ -48,7 +44,7 @@ def run_delta_maintenance(spark: SparkSession, config: PipelineConfig) -> None:
         try:
             # ─────────────────────────────────────────────────────────────────
             # 1. OPTIMIZE with Z-ORDER
-            # INTERVIEW: "How does Z-ORDER help query performance?"
+            # NOTE: How does Z-ORDER help query performance?"
             # → "Z-ORDER uses a multidimensional space-filling curve to co-locate 
             #    related information in the same Parquet files. When downstream Gold 
             #    or Power BI queries filter by `WHERE order_date = '2023-05-01'`, 
@@ -65,7 +61,7 @@ def run_delta_maintenance(spark: SparkSession, config: PipelineConfig) -> None:
             
             # ─────────────────────────────────────────────────────────────────
             # 2. VACUUM with 7-Day Safety Retention
-            # INTERVIEW: "Why 168 hours (7 days) retention for VACUUM?"
+            # NOTE: Why 168 hours (7 days) retention for VACUUM?"
             # → "VACUUM deletes historical Parquet files that are no longer referenced 
             #    by the current Delta transaction log. Retaining 168 hours ensures that 
             #    concurrent long-running readers don't fail with FileNotFoundException, 

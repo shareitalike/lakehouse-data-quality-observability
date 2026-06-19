@@ -70,7 +70,7 @@ def generate_clean_bronze_data(
     - Prices come from the product catalog
     
     
-    # INTERVIEW: "Why separate generation from injection?"
+    # NOTE: Why separate generation from injection?"
     # → "Testability. I can validate the generator produces correct data,
     #    then validate the injector produces the right failure patterns.
     #    If combined, a bug in generation masks injection testing."

@@ -88,7 +88,7 @@ class SchemaDriftSimulator:
         Batch 4: Column type changed (quantity from int to string).
         
         
-        # INTERVIEW: "What's worse — a missing column or a type change?"
+        # NOTE: What's worse — a missing column or a type change?"
         # → "Type change. A missing column fails loud and fast.
         #    A type change passes silently — your int column becomes a
         #    string, SUM() returns null instead of a number, and nobody

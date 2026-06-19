@@ -56,7 +56,7 @@ def inject_duplicate_orders(df: DataFrame, rate: float, seed: int) -> DataFrame:
     
     
     
-    # INTERVIEW: "What causes duplicate events in production?"
+    # NOTE: What causes duplicate events in production?"
     # → "At-least-once delivery in Kafka/Kinesis, network retries in HTTP APIs,
     #    idempotency key failures, and producer restart replays."
     """
@@ -130,7 +130,7 @@ def inject_negative_quantities(df: DataFrame, rate: float, seed: int) -> DataFra
     Inject negative quantity values.
     
     
-    # INTERVIEW: "Is a negative quantity always an error?"
+    # NOTE: Is a negative quantity always an error?"
     # → "Depends on the domain. In some systems, negatives represent returns.
     #    In ours, returns have their own status. So negatives are errors.
     #    This is why severity is configurable — one domain's error is another's
@@ -186,7 +186,7 @@ def inject_schema_drift(df: DataFrame) -> DataFrame:
     Add an unexpected column to simulate schema drift.
     
     
-    # INTERVIEW: "How do you handle schema drift in your pipelines?"
+    # NOTE: How do you handle schema drift in your pipelines?"
     # → "Schema drift detection alerts the team. Schema enforcement prevents
     #    unexpected columns from entering Bronze. The data contract specifies
     #    whether evolution is allowed at each layer."

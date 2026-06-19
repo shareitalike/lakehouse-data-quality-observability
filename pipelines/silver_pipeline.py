@@ -1,14 +1,7 @@
 """
 Annotated: pipelines/silver_pipeline.py
 =========================================
-INTERVIEW FOCUS:
-  - The Silver layer's transformation responsibilities (dedup, normalize, split)
-  - The Window function for deterministic deduplication (ROW_NUMBER over order_id)
-  - Why F.try_to_timestamp instead of F.to_timestamp
-  - Single-Pass DQ Tagging and Left Anti Join for quarantine exclusion
-  - Production Delta MERGE INTO (Idempotent upsert pattern)
-  - PII Masking via SHA-256 (F.sha2) for GDPR/CCPA compliance
-  - The split into 3 tables (orders, customers, products) — normalized 3NF design
+
 
 MEDALLION LAYER PHILOSOPHY — SILVER:
   "Silver is the 'conformed' layer. Data in Silver should be:
@@ -18,7 +11,7 @@ MEDALLION LAYER PHILOSOPHY — SILVER:
    (4) PII-protected — sensitive data hashed before storage
    (5) Normalized — split into proper dimensional model tables"
 
-TALKING POINT FOR INTERVIEW:
+
   "In production 2022-2023, Silver is written using Delta Lake MERGE INTO.
   If ADF re-triggers the batch run due to an upstream delay, the merge operation
   is completely idempotent: existing records are updated only if the source timestamp
@@ -91,7 +84,7 @@ class SilverPipeline:
         
         # ─────────────────────────────────────────────────────────────────────
         # STEP 2: Window-based Deterministic Deduplication
-        # INTERVIEW: "Why ROW_NUMBER() over dropDuplicates()?"
+        # NOTE: Why ROW_NUMBER() over dropDuplicates()?"
         # → "ROW_NUMBER() with ORDER BY order_timestamp DESC guarantees deterministic 
         #    deduplication, always keeping the most recent event for any duplicate order_id."
         # ─────────────────────────────────────────────────────────────────────
@@ -107,7 +100,7 @@ class SilverPipeline:
         
         # ─────────────────────────────────────────────────────────────────────
         # STEP 3: PII Masking & Derived Fields
-        # INTERVIEW: "How did you protect customer PII in 2022-2023 without Unity Catalog dynamic masking?"
+        # NOTE: How did you protect customer PII in 2022-2023 without Unity Catalog dynamic masking?"
         # → "We used cryptographic one-way hashing with SHA-256 in PySpark (F.sha2). 
         #    Customer email and phone numbers were hashed before saving to Silver, 
         #    ensuring downstream analytics remained GDPR/CCPA compliant."
@@ -186,7 +179,7 @@ class SilverPipeline:
         Write all Silver tables to Delta.
         
         PRODUCTION MERGE PATTERN:
-        INTERVIEW: "How do you make the Silver load idempotent?"
+        DESIGN NOTE: How do you make the Silver load idempotent?"
         → "We use DeltaTable.isDeltaTable() to check existence. If the table exists, 
            we perform a Delta MERGE INTO:
            target.merge(source, 'target.order_id = source.order_id')

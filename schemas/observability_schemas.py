@@ -8,7 +8,7 @@ Observability layer schema definitions.
 # (1) append-only mode prevents accidental overwrites, (2) Delta time travel
 # allows recovery, (3) periodic backups of the Delta table.
 
-# INTERVIEW: "Why is your observability table append-only?"
+# NOTE: Why is your observability table append-only?"
 # → "Three reasons: immutable audit trail for compliance, time-series trend
 #    analysis requires historical data, and append-only prevents accidental
 #    deletion of critical monitoring data. You can't do trend-based alerting
@@ -49,7 +49,7 @@ OBSERVABILITY_METRICS_SCHEMA = StructType([
     StructField("rule_version", StringType(), nullable=False),
     # Version of the rule config used. Critical for audit: "which version
     # of the rule was active when this metric was captured?"
-    # INTERVIEW: "Why version your validation rules?"
+    # NOTE: Why version your validation rules?"
     # → "Because rule thresholds change over time. When investigating a past
     #    incident, you need to know what thresholds were active. Without
     #    versioning, you can't distinguish 'rule was too loose' from

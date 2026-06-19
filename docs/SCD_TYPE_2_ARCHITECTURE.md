@@ -5,7 +5,7 @@ This document outlines the exact technical changes that will be introduced to ou
 ## 1. Modifications to `pipelines/silver_pipeline.py`
 
 ### Adding the Delta Merge Functionality
-We will add a new dedicated method `merge_scd2_customers` to the `SilverPipeline` class. This method contains the advanced PySpark logic that interviewers want to see.
+We will add a new dedicated method `merge_scd2_customers` to the `SilverPipeline` class. This method contains the advanced PySpark logic that production enterprise systems require.
 
 **The process inside `merge_scd2_customers`:**
 1. **Initial Load Support:** The script will first check if the `silver_customers` Delta table exists. If it doesn't, it provisions it automatically with the three vital SCD columns:
@@ -31,7 +31,7 @@ self.merge_scd2_customers(customers_df, customers_path)
 
 ## 2. Testing & Data Generation Adjustments
 
-To prove this works to an interviewer, we must generate changes!
+To validate this functionality, we generate changes!
 We will either:
 1. Provide a small custom Python notebook/script (`generate_currency_change.py`) that forcefully updates a single customer's currency in the source Bronze data.
 2. OR instruct the user during the Walkthrough phase on how to quickly modify the Silver input manually to trigger the SCD 2 update flag in real-time.
@@ -44,7 +44,7 @@ df.join(customers_df.filter(F.col("is_current") == True), on="customer_id")
 ```
 We will append this filter to the appropriate logic in `gold_pipeline.py` to ensure revenue and LTV logic isn't inadvertently double-counting closed customer records.
 
-## Summary of Senior Interview Signals added:
+## Summary of Core Capabilities:
 * **Complex Data Modeling:** Understanding how and why SCD Type 1 vs Type 2 is used.
 * **Advanced PySpark:** Executing a multi-row transform required for Delta `MERGE`.
 * **Atomic Transactions:** Leveraging Delta Lake to ensure historical records are closed and opened safely without leaving the table in a corrupted state if the pipeline fails midway.

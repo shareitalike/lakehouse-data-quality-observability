@@ -20,7 +20,7 @@ class Severity(str, Enum):
     Rule severity levels.
     
     
-    # INTERVIEW: "What happens when a critical rule fails?"
+    # NOTE: What happens when a critical rule fails?"
     # → "The record is routed to quarantine. The pipeline continues.
     #    We never crash pipelines on bad data — that causes cascading
     #    failures in production."
@@ -154,7 +154,7 @@ class TimestampFreshnessRule(BaseRuleConfig):
     # freshness checks produce false positives. Always use the cluster's
     # current_timestamp(), not Python datetime.now().
     
-    # INTERVIEW: "How do you handle clock skew in freshness checks?"
+    # NOTE: How do you handle clock skew in freshness checks?"
     # → "Use Spark's current_timestamp() which is consistent across the
     #    cluster, not Python's datetime which varies per executor."
     """
@@ -175,7 +175,7 @@ class DuplicateDetectionRule(BaseRuleConfig):
     Configuration for duplicate detection.
     
     
-    # INTERVIEW: "Why separate duplicate detection from unique key check?"
+    # NOTE: Why separate duplicate detection from unique key check?"
     # → "Unique key check tells you IF duplicates exist. Duplicate detection
     #    tells you WHICH record to keep. Different questions, different actions."
     """
@@ -196,7 +196,7 @@ class SchemaDriftRule(BaseRuleConfig):
     Configuration for schema drift detection.
     
     
-    # INTERVIEW: "What's the difference between schema enforcement and
+    # NOTE: What's the difference between schema enforcement and
     # schema drift detection?"
     # → "Schema enforcement PREVENTS non-conforming data from being written.
     #    Schema drift detection ALERTS you that the upstream schema changed.
@@ -254,7 +254,7 @@ class RowCountAnomalyRule(BaseRuleConfig):
     # FAILURE MODE: First run has no historical data → no anomaly detection.
     # Mitigation: skip anomaly detection on first run, log baseline instead.
     
-    # INTERVIEW: "Why percentage-based instead of absolute thresholds?"
+    # NOTE: Why percentage-based instead of absolute thresholds?"
     # → "A table that normally has 1M rows and drops to 500K is a 50% drop—
     #    clearly anomalous. But a table that normally has 100 rows and goes to
     #    50 might be normal weekend traffic. Percentages are context-aware."
@@ -306,7 +306,7 @@ class DistributionAnomalyRule(BaseRuleConfig):
     #   Good for: distribution-agnostic, handles skew naturally.
     #   Bad for: misses tail changes if percentile granularity is too coarse.
     
-    # INTERVIEW: "Why do you use both z-score and percentile detection?"
+    # NOTE: Why do you use both z-score and percentile detection?"
     # → "Z-score catches outlier injection (single bad values). Percentile
     #    catches distribution shift (entire shape changes). A price manipulation
     #    bot might not change the mean much but will destroy the percentile

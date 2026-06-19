@@ -1,14 +1,9 @@
 """
 Annotated: pipelines/orchestrator.py
 ====================================
-INTERVIEW FOCUS:
-  - How Azure Data Factory triggers this via Databricks Python Activity on Job Clusters
-  - How argparse captures ADF parameters (@pipeline().parameters.WindowStart / WindowEnd)
-  - The Watermark Control Table pattern for idempotent backfills and batch recovery
-  - Circuit Breaker: Automatic sys.exit(1) on quarantine threshold breaches (> 5%)
-  - The dual-execution model (local vs azure ADLS Gen2)
 
-TALKING POINT:
+
+
   "The orchestrator is the ADF entry point. ADF calls this script with
   --env azure, --window-start, and --window-end. It initializes the Delta Control Table
   to check the last processed watermark. If an unrecoverable failure or high quarantine 
@@ -46,7 +41,7 @@ def check_and_update_control_table(
     """
     Control Table Pattern: Logs pipeline execution state for watermark tracking and idempotent recovery.
     
-    INTERVIEW: "How do you prevent duplicate batch processing if an ADF run is retried?"
+    DESIGN NOTE: How do you prevent duplicate batch processing if an ADF run is retried?"
     → "We check the `observability.pipeline_control` Delta table before running. If a batch_id 
        already shows status='SUCCESS', we skip execution or log an idempotent warning. 
        When a batch finishes, we update the watermark timestamp so tomorrow's run picks up exactly 

@@ -1,13 +1,13 @@
 """
 Validation Engine — orchestrates rule execution per pipeline layer.
 
-INTERVIEW: "Why build a custom Validation Engine instead of using DLT expectations?"
+DESIGN NOTE: Why build a custom Validation Engine instead of using DLT expectations?"
 → "Delta Live Tables (DLT) is great, but in 2022-2023 it locked you into proprietary 
    Databricks runtime features. By building our own `ValidationEngine` using native PySpark, 
    our framework is completely portable across Azure Databricks Job Clusters, Azure Synapse, 
    or local test runners."
 
-INTERVIEW: "How do you avoid Spark shuffle bottlenecks when evaluating 10+ rules?"
+DESIGN NOTE: How do you avoid Spark shuffle bottlenecks when evaluating 10+ rules?"
 → "We offer a dual execution model:
    1. `validate()`: Uses the Strategy Pattern via Rule Registry for granular rule-by-rule 
       reporting, contract checking, and metric persistence.
@@ -37,7 +37,7 @@ class ValidationEngine:
     """
     Orchestrates validation rule execution, single-pass tagging, and result aggregation.
     
-    INTERVIEW: "Explain the Single Responsibility Principle here."
+    DESIGN NOTE: Explain the Single Responsibility Principle here."
     → "The ValidationEngine's ONLY job is to take a DataFrame and a list of rules, 
        run them, and return standardized `ValidationResult` objects and tagged DataFrames. 
        It doesn't read data or write to storage. This separation makes it highly testable."
@@ -105,7 +105,7 @@ class ValidationEngine:
         PRODUCTION GRADE: Evaluates all layer-specific data quality conditions in 
         A SINGLE PYSPARK PASS via columnar array expressions.
         
-        INTERVIEW: "Why is Single-Pass Tagging superior to separate filter actions?"
+        DESIGN NOTE: Why is Single-Pass Tagging superior to separate filter actions?"
         → "Separate rule executions trigger N actions/shuffles. Single-pass tagging 
            creates a `_dq_failures` array column in ONE Catalyst execution plan:
            `array_compact(array(when(cond1, 'ERR_01'), when(cond2, 'ERR_02'), ...))`
